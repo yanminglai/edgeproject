@@ -5,11 +5,11 @@ import matplotlib.pyplot as plt
 import random
 
 class Edge_Node:
-    def __init__(self, max_resource, eps):
+    def __init__(self, max_resource, eps, init_queue_len):
         self.max_resource = max_resource
         self.eps = eps
         self.remain_resource = max_resource
-
+        self.init_queue_len = init_queue_len
         # for init task at beginning
         self.taskID = []
         self.resource = []
@@ -26,8 +26,9 @@ class Edge_Node:
         # for ploting
         self.record_ts = []
         self.record_runtask = []
-    def initialize_queue(self, size):
-        for task in range(size):
+    def initialize_queue(self):
+        print(self.init_queue_len)
+        for task in range(self.init_queue_len):
             resource_this_task = random.randint(1,10)
             eta_this_task = random.randint(1,20)
             deadline_this_task = eta_this_task + random.randint(20, 50)
@@ -37,6 +38,28 @@ class Edge_Node:
             self.deadline_from_now.append(deadline_this_task)
         # print("resource list", self.resource)
 
+
+    def eps_select(self):
+        p = np.random.random()
+        if p < self.eps:
+            idx = random.randint(0, len(self.taskID)-1)
+        else: 
+            idx = 0
+
+        # print("cur_rs", self.cur_rs)
+        # print("cur_eta", self.cur_eta)
+        # print("self.resource[0]", self.resource[idx])
+        # print("self.remain_resource", self.remain_resource)       
+        if not self.resource:
+            print("all task completed")
+
+        elif self.resource[idx] < self.remain_resource:
+            self.cur_ID.append(self.taskID.pop(idx))
+            self.cur_eta.append(self.eta.pop(idx) + self.timestamp)
+            self.cur_rs.append(self.resource.pop(idx))
+            # print("cur_eta", self.cur_eta)
+        else:
+            print("resource not enough, halt")
 
     def FCFS(self):
         p = np.random.random()
@@ -134,12 +157,16 @@ class Edge_Node:
 
 
 
-def _init():
+def _init(max_resource, eps, init_queue_len):
     global _edge_server
-    _edge_server = Edge_Node(max_resource=200, eps=0.5)
+    _edge_server = Edge_Node(max_resource, eps, init_queue_len)
+    _edge_server.initialize_queue()
 
-def init_task_queue(size):
-    return _edge_server.initialize_queue(size)
+def init_task_queue():
+    return _edge_server.initialize_queue()
+
+def eps_select():
+    return _edge_server.eps_select()
 
 def FCFS():
     return _edge_server.FCFS()
@@ -161,3 +188,6 @@ def update_timer(value):
 
 def plot_tasknum():
     return _edge_server.plot_tasknum()
+
+def get_tasklen():
+    return len(_edge_server.cur_ID)
